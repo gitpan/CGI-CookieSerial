@@ -10,8 +10,8 @@ use CGI::Cookie;
 # MODINFO dependency module Data::Serializer
 use Data::Serializer;
 
-# MODINFO version 0.03
-our $VERSION = '0.03';
+# MODINFO version 0.04
+our $VERSION = '0.04';
 
 # MODINFO constructor new create a new CookieSerial object
 sub new {

@@ -1,5 +1,7 @@
 Revision history for Perl extension CGI::CookieSerial.
 
+0.04  Tue Jan 14 15:47 19 2003
+	- updated the Makefile.PL to check for module dependancies during make/test/install
 0.03  Tue Jan 14 14:43:17 2003
 	- added another example to DESCRIPTION
 0.02  Tue Jan 14 14:28:32 2003

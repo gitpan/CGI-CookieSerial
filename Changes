@@ -1,5 +1,7 @@
 Revision history for Perl extension CGI::CookieSerial.
 
+0.06  Wed Jan 15 15:53:24 2003
+	- fixed bug in cool() sub for undefined cookie value
 0.05  Wed Jan 15 12:51:03 2003
 	- made usable with perl 5.6 and above
 0.04  Tue Jan 14 15:47 19 2003

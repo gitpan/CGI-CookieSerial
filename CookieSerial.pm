@@ -1,7 +1,7 @@
 # MODINFO module CGI::CookieSerial a wrapper for creating serialized cookies with Data::Serializer and CGI::Cookie
 package CGI::CookieSerial;
 
-# MODINFO dependency module 5.008
+# MODINFO dependency module 5.006
 use 5.006;
 # MODINFO dependency module warnings
 use warnings;
@@ -10,8 +10,8 @@ use CGI::Cookie;
 # MODINFO dependency module Data::Serializer
 use Data::Serializer;
 
-# MODINFO version 0.05
-our $VERSION = '0.05';
+# MODINFO version 0.06
+our $VERSION = '0.06';
 
 # MODINFO constructor new create a new CookieSerial object
 sub new {
@@ -56,15 +56,15 @@ sub new {
 # MODINFO method burn
 sub burn {
         my $self = shift;
-	my $cookie_data = shift || $self->{data};
+	$self->{data} ||= shift || '';
 	if ( ! $self->{noserialize} ) {
-		$cookie_data = $self->{capncrunch}->freeze($cookie_data);
+		$self->{data} = $self->{capncrunch}->freeze($self->{data});
 	} 
 
         # make into cookie form
         my $cookie = CGI::Cookie->new(
                 -name => $self->{name},
-                -value => $cookie_data,
+                -value => $self->{data},
                 -path => $self->{path},
                 -domain => $self->{domain},
                 -secure => $self->{secure},
@@ -81,7 +81,10 @@ sub cool {
 
         # fetch cookie
         my %cookies = fetch CGI::Cookie;
-        my $data = $cookies{$self->{name}}->value();
+	$self->{data} ||= '';
+	$self->{debug} = "\$self->{data} = $self->{data}<br>".
+		"\$self->{name} = $self->{name}<br>";
+        my $data = $cookies{$self->{name}}->value() if $self->{data};
 
         # deserialize the data
         my $soggy = ( $self->{noserialize} ) ? $data : $self->{capncrunch}->thaw($data);

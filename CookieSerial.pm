@@ -10,8 +10,8 @@ use CGI::Cookie;
 # MODINFO dependency module Data::Serializer
 use Data::Serializer;
 
-# MODINFO version 0.01
-our $VERSION = '0.02';
+# MODINFO version 0.03
+our $VERSION = '0.03';
 
 # MODINFO constructor new create a new CookieSerial object
 sub new {
@@ -149,12 +149,32 @@ Retrieving a cookie with data:
 
  print $cgi->header({  -type => 'text/html', });
 
- print "<html><body><pre>";
+ print "<html><body><pre>Data check:<br>";
  print Dumper(@data)."<br>";
  print "$data[2]<br>";
  print "$data[0]{actor}";
  print "</body></html>"; 
 
+Retrieving a regular cookie:
+
+ use strict;
+ use Data::Dumper;
+ use CGI;
+ use CGI::CookieSerial;
+
+ my $cgi = new CGI;
+ my $pbscookie = new CGI::CookieSerial(
+        -name => 'tv.station',
+        -noserialize => 1,   
+ );
+
+ my $station_call_letters = $pbscookie->cool();
+
+ print $cgi->header({  -type => 'text/html', });
+
+ print "<html><body><pre>";
+ print "Call letters: $station_call_letters";
+ print "</body></html>";
 
 
 =head1 ABSTRACT

@@ -1,4 +1,4 @@
-use 5.008;
+use 5.006;
 # ExtUtils::AutoInstall Bootstrap Code, version 5.
     BEGIN{my$p='ExtUtils::AutoInstall';my$v=0.40;eval"use $p $v;1
     "or do{my$e=$ENV{PERL_EXTUTILS_AUTOINSTALL};(!defined($e)||$e
@@ -24,12 +24,10 @@ use 5.008;
 	    make_args	=> '--hello',	# option(s) for CPAN::Config
 	    force	=> 1,		# pseudo-option to force install
 	},
-	'Required modules'	=> [
-	    # do we want to install this feature by default?
-	    -default	=> ( system('feature1 --version') == 0 ),
-	    CGI	=> '2.89',
-	    'CGI::Cookie' => '1.21',
-	    'Data::Serializer' => '0.17',
+	'Required modules' => [
+	    'CGI'		=> '2.89',
+	    'CGI::Cookie' 	=> '1.21',
+	    'Data::Serializer' 	=> '0.17',
 	],
     );
 
@@ -39,7 +37,11 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'CGI::CookieSerial',
     'VERSION_FROM'	=> 'CookieSerial.pm', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
+    'PREREQ_PM'		=> {
+            'CGI'       => '2.89',
+            'CGI::Cookie' => '1.21',
+            'Data::Serializer' => '0.17',
+	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'CookieSerial.pm', # retrieve abstract from module
        AUTHOR     => 'Duncan McGreggor <oubiwann@cpan.org>') : ()),

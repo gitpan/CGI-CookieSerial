@@ -2,7 +2,7 @@
 package CGI::CookieSerial;
 
 # MODINFO dependency module 5.008
-use 5.008;
+use 5.006;
 # MODINFO dependency module warnings
 use warnings;
 # MODINFO dependency module CGI::Cookie
@@ -10,8 +10,8 @@ use CGI::Cookie;
 # MODINFO dependency module Data::Serializer
 use Data::Serializer;
 
-# MODINFO version 0.04
-our $VERSION = '0.04';
+# MODINFO version 0.05
+our $VERSION = '0.05';
 
 # MODINFO constructor new create a new CookieSerial object
 sub new {

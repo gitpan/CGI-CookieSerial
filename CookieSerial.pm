@@ -11,64 +11,64 @@ use CGI::Cookie;
 use Data::Serializer;
 
 # MODINFO version 0.01
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 # MODINFO constructor new create a new CookieSerial object
 sub new {
         my $class = shift;
         $class = ref($class) if ref($class);
-        my($name,$data,$path,$domain,$secure,$expires) =
-                CGI::Cookie::rearrange([NAME,[VALUE,VALUES],PATH,DOMAIN,SECURE,EXPIRES],@_);
+	my $self = bless {}, $class;
+	my %flags = @_;
 
-        # Pull out our parameters.
-        my @values;
-        my $value;
-        if (ref($value)) {
-                if (ref($value) eq 'ARRAY') {
-                        @values = @$value;
-                } elsif (ref($value) eq 'HASH') {
-                        @values = %$value;
-                }
-        } else {
-                @values = ($value);
-        }
+	# cookie vars
+	$self->{name} = $flags{-name} || '';
+	$self->{data} = $flags{-data} || '';
+        $self->{path} = $flags{-path} || '/';
+        $self->{domain} = $flags{-domain};
+        $self->{secure} = $flags{-secure};
+        $self->{expires} = $flags{-expires};
 
-        bless my $self = {
-                'name'=>$name,
-                'data'=>[@values],
-        }, $class;
+	$self->{noserialize} = $flags{-noserialize} || 0;
 
-        # IE requires the path and domain to be present for some reason.
-        $path ||= "/";
+	if ( ! $self->{noserialize} ) {	
+		# serial vars
+		$self->{serializer} = $flags{-serializer};
+		$self->{digester} = $flags{-digester};
+		$self->{cipher} = $flags{-cipher};
+		$self->{secret} = $flags{-secret} || 'Sd35wsyJJ6l9zaPxkaeAQUZE3yoCDA83P9ZilFyuYefb+pVJ+qiKZKCp7JqBXpYz';
+		$self->{portable} = $flags{-portable};
+		$self->{compress} = $flags{-compress} || 1;
+		$self->{debug} = '';
+		$self->{serializer_token} = $flags{-serializer_token};
 
-	# these function calls are ugly... need to change them
-        $self->{path} = CGI::Cookie::path($path)     if defined $path;
-        $self->{domain} = CGI::Cookie::domain($domain) if defined $domain;
-        $self->{secure} = CGI::Cookie::secure($secure) if defined $secure;
-        $self->{expires} = CGI::Cookie::expires($expires) if defined $expires;
-
-        $self->{capncrunch} = Data::Serializer->new(	# yes, I know it's not a cookie cereal... it's just so good...
-                cipher => 'Blowfish',
-                secret => 'Sd35wsyJJ6l9zaPxkaeAQUZE3yoCDA83P9ZilFyuYefb+pVJ+qiKZKCp7JqBXpYz',
-                compress => 1,
-        );
-
+        	$self->{capncrunch} = Data::Serializer->new(			# yes, I know it's not a cookie cereal... it's just so good...
+			serializer => $self->{serializer},
+			digester => $self->{digester},
+        	        cipher => $self->{cipher},
+        	        secret => $self->{secret},
+        	        compress => $self->{compress},
+			serializer_token => $self->{serializer_token},
+        	);
+	}
         return $self;
 }
 
 # MODINFO method burn
 sub burn {
         my $self = shift;
-        my $cookie_data = shift || $self->{data};                        # data reference
+	my $cookie_data = shift || $self->{data};
+	if ( ! $self->{noserialize} ) {
+		$cookie_data = $self->{capncrunch}->freeze($cookie_data);
+	} 
 
         # make into cookie form
         my $cookie = CGI::Cookie->new(
                 -name => $self->{name},
-                -value => $self->{capncrunch}->freeze($cookie_data),
-                -secure => $self->{secure},
-                -path => $self->{domain},
-                -expires => $self->{expires},
+                -value => $cookie_data,
+                -path => $self->{path},
                 -domain => $self->{domain},
+                -secure => $self->{secure},
+                -expires => $self->{expires},
         );
 
         # print header
@@ -79,14 +79,12 @@ sub burn {
 sub cool {
         my $self = shift;
 
-        # prepare to eat the cookie
-
         # fetch cookie
         my %cookies = fetch CGI::Cookie;
         my $data = $cookies{$self->{name}}->value();
 
         # deserialize the data
-        my $soggy = $self->{capncrunch}->thaw($data);
+        my $soggy = ( $self->{noserialize} ) ? $data : $self->{capncrunch}->thaw($data);
 
         return $soggy;
 }
@@ -104,12 +102,11 @@ __END__
 
 =head1 NAME
 
-CGI::CookieSerial - a wrapper for creating serialized cookies with Data::Serializer and CGI::Cookie
+CGI::CookieSerial - a wrapper for creating a CGI serial cookie or cookies with any serialized perl data stuctures 
 
 =head1 SYNOPSIS
 
 Setting a cookie with data:
-#!/usr/bin/perl
 
  use strict;
  use CGI;
@@ -162,24 +159,20 @@ Retrieving a cookie with data:
 
 =head1 ABSTRACT
 
-  Although deceptively similar to the workings of CGI::Cookie, this module
-  operates a little differently. By design, it is very simple to use. In
-  essence, one need only instantiate a new object and name the cookie,
-  create the data, and burn the cookie. Retrieval is just as simple.
+Although deceptively similar to the workings of CGI::Cookie, this module
+operates a little differently. By design, it is very simple to use. In
+essence, one need only instantiate a new object and name the cookie,
+create the data, and burn the cookie. Retrieval is just as simple.
 
 =head1 DESCRIPTION
 
-Stub documentation for CGI::CookieSerial, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
+This module is simpler to use than other cookie modules, but other than that, there isn't much difference. 
 
 =head1 METHONDS
 
 =head2 new()
 
-This is shamelessly copied from CGI::Cookie (more or less); it takes all the same parameters as CGI::Cookie. In addition to the CGI::Cookie->new() parameters, new() also takes the same parameters as Data::Serializer->new(). This gives the following list of parameters:
+In addition to the CGI::Cookie->new() parameters, the constructor also takes the same parameters as Data::Serializer->new(). There is one new parameter, -noserialize, which is a boolean that enables one to turn off the serializing function and fetch regular cookies. These give the following list of parameters:
 
  -name
  -value 
@@ -187,6 +180,10 @@ This is shamelessly copied from CGI::Cookie (more or less); it takes all the sam
  -domain
  -path 
  -secure 
+
+and
+ 
+ -noserialize
 
 and
 
@@ -212,8 +209,17 @@ This method simply prints the value of the cookie. There's really not a great de
 
 =head1 TODO
 
+=over 4
+
+=item 
+
 Implement this with inheritance
+
+=item
+
 Not require that data be a reference, and have the module intelligently check and then Do The Right Thing
+
+=back
 
 =head1 SEE ALSO
 

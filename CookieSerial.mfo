@@ -2,7 +2,7 @@
 
 <modinfo>
 <modules>
-<module name="CGI::CookieSerial" short_description="a wrapper for creating serialized cookies with Data::Serializer and CGI::Cookie" version="0.01">
+<module name="CGI::CookieSerial" short_description="a wrapper for creating serialized cookies with Data::Serializer and CGI::Cookie" version="0.02">
 <functions/>
 <methods>
 <method name="burn"/>
